@@ -43,6 +43,13 @@ def findall(text):
         if match is not None:
             abb = str(match.group(1))
 
+            # skip one-letter candidates
+            if len(abb) < 2:
+                continue
+            # skip all lowercase candidates
+            if re.search(r'[A-Z]', abb) is None:
+                continue
+
             # Very long abbreviations will break regex.
             if len(abb) < 9:
                 abR = make_abbr_regex(match)
