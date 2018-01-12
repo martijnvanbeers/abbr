@@ -137,7 +137,7 @@ def expandall(text):
     return text
 
 
-def find_corpus(folder, clean=True):
+def find_corpus(corpus, clean=True):
     """
     Find all abbreviations in a corpus (folder of text files). Returns a
     dataframe containing the abbreviations, terms associated with each unique
@@ -145,9 +145,15 @@ def find_corpus(folder, clean=True):
 
     Parameters
     ----------
-    folder : str
+    corpus : str
         Folder containing text files from which to build abbreviations
         dictionary.
+
+    OR
+
+    corpus : pandas.Series
+        A Series object from Pandas containing texts from which to build
+        the abbreviations dictionary
 
     clean : bool
         Determines whether or not to process text strings within files using
@@ -169,10 +175,7 @@ def find_corpus(folder, clean=True):
     """
     corpus_abbs = {}
 
-    files = glob(join(folder, '*.txt'))
-    for f in files:
-        with open(f, 'rb') as fo:
-            text = fo.read()
+    def find_text(corpus_abbs, text, clean):
 
         if clean:
             text = clean_str(text)
@@ -181,6 +184,20 @@ def find_corpus(folder, clean=True):
         keys = set(corpus_abbs).union(abbs)
         no = []  # Default if abbreviation not in both corpus_abbs and file abbs
         corpus_abbs = dict((k, corpus_abbs.get(k, no) + abbs.get(k, no)) for k in keys)
+        return corpus_abbs
+
+    if isinstance(corpus, str):
+        files = glob(join(corpus, '*.txt'))
+
+        for f in files:
+            with open(f, 'rb') as fo:
+                text = fo.read()
+
+            corpus_abbs = find_text(corpus_abbs, text, clean)
+
+    elif isinstance(corpus, pd.Series):
+        for text in list(corpus):
+            corpus_abbs = find_text(corpus_abbs, text, clean)
 
     # Count number of documents in which a given (abb, term) pair occurs.
     corpus_abbs = {k: Counter(v) for (k, v) in corpus_abbs.items()}
