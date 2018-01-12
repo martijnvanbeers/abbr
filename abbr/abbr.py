@@ -61,8 +61,10 @@ def findall(text):
                     phrase = str(fullterm.group(0)[:index]).strip()
 
                     if all(letter.lower() in phrase.lower() for letter in abb):
+                        logger.info('Found term {} for abbreviation {}'.format(phrase, abb))
                         abbrevs[abb] = phrase
                     else:
+                        logger.info('Candidate term {} is not a match for abbreviation {}'.format(phrase, abb))
                         abbrevs[abb] = None
                 else:
                     abbrevs[abb] = None
